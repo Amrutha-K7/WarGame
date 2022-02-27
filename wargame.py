@@ -4,6 +4,7 @@ import random
 
 TOTAL_CARDS=52
 PLAYER_CARDS_COUNT=26
+DEBUG_CODE=0
 
 suits = ['Hearts','Clubs','Spades','Diamonds']
 ranks = [2,3,4,5,6,7,8,9,10,'Jack','Queen','King','Ace']
@@ -83,6 +84,13 @@ class Player():
         else:
             self.player_cards.append(incoming_cards)
 
+    
+    def print_player_cards(self):
+        print(f'Printing cards of player {self.player_name} for debug:')
+        lst = [card.value for card in self.player_cards]
+        print(lst)
+        print()
+
     #overriding string method for printing Player class object; prints message like "player1 has 26 cards"
     def __str__(self):
         return f'Player {self.player_name} has {len(self.player_cards)} cards.'
@@ -96,6 +104,7 @@ class Gameplay:
         # Create deck of 52 cards
         self.current_deck = Deck()
 
+        print("Shuffling the deck of 52 cards...")
         #call the shuffle method in Deck class to shuffle the cards before distributing
         self.current_deck.shuffle_cards()
 
@@ -110,6 +119,7 @@ class Gameplay:
     #This method is used to distribute the cards to both the players
     def deal_deck_cards(self):
 
+        print("Distributing 26 cards to both the players...")
         #distribute cards one at a time to each player's deck
         for i in range(0,len(self.current_deck.deck_of_cards),2):
             self.player1.add_cards(self.current_deck.deck_of_cards[i])
@@ -118,7 +128,25 @@ class Gameplay:
         #test code to spot check if the cards are distributed properly
         assert len(self.player1.player_cards) == PLAYER_CARDS_COUNT
         assert len(self.player2.player_cards) == PLAYER_CARDS_COUNT
+
+        #In case if we want to see the cards distributed to both the players for debugging purpose
+        if DEBUG_CODE == 1:
+            self.player1.print_player_cards()
+            self.player2.print_player_cards()
     
+
+    #This method is for distributing custom cards to both the players: this is for debugging various corner cases.
+    def deal_test_cards(self,cards1,cards2):
+        if DEBUG_CODE == 1:
+            print("Dealing the customized cards")
+
+        self.player1.add_cards(cards1)
+        self.player2.add_cards(cards2)
+
+        if DEBUG_CODE == 1:
+            self.player1.print_player_cards()
+            self.player2.print_player_cards()
+
 
     #This method includes the actual game logic
     def start_game(self):
@@ -131,6 +159,10 @@ class Gameplay:
             first_card=self.player1.player_cards.pop(0)
             second_card=self.player2.player_cards.pop(0)
 
+            print()
+            print(f"Player1 {self.player1.player_name} has revealed the card: {first_card.value}")
+            print(f"Player2 {self.player2.player_name} has revealed the card: {second_card.value}")
+
             #appending played cards to temp_pile list and comparing
             temp_pile.extend([first_card, second_card])
 
@@ -140,6 +172,9 @@ class Gameplay:
                 random.shuffle(temp_pile)
                 self.player1.add_cards(temp_pile)
 
+                string= "both" if len(temp_pile) > 2 else "all"
+                    
+                print(f"Player1 {self.player1.player_name} gets {string} the cards..")
                 #Clear the temporary pile
                 temp_pile=[]
             
@@ -149,26 +184,33 @@ class Gameplay:
                 random.shuffle(temp_pile)
                 self.player2.add_cards(temp_pile)
 
+                string= "all" if len(temp_pile) > 2 else "both"
+                print(f"Player2 {self.player2.player_name} gets {string} the cards..")
+
                 # Clear the temporary pile
                 temp_pile = []
 
             #war: Both player cards have same number
             else:
+
+                print("Both the player cards are equal, its a war..")
                 #Make sure both the players have >= 3 cards to start the war, else exit and follow the logic to decide the winner
                 if len(self.player1.player_cards)>=3 and len(self.player2.player_cards)>=3:
-
                     #pop 3 cards from both players and add it to temp_pile list and continue the loop to pick the next cards
+                    
+                    print("Both the players keeping 3 cards face-down..")
                     for _ in range(3):
                         temp_pile.append(self.player1.player_cards.pop(0))
                     for _ in range(3):
                         temp_pile.append(self.player2.player_cards.pop(0))
                 else:
+                    print("Atleast one of the players does not have adequate cards to continue..")
                     break #break out of while loop and decide the winner
             
             
         # we are here, when atleast one of the players have inadequate cards to continue the game so its
         # Time to decide the winner, 
-        
+        print()
         len1=len(self.player1.player_cards)
         len2=len(self.player2.player_cards)
         print(f'Number of cards Player1 {self.player1.player_name}={len1}')
@@ -178,17 +220,60 @@ class Gameplay:
         if len1==len2:
             print(f'Game is drawn between Player1 {self.player1.player_name} and Player2 {self.player2.player_name}')
         elif  len1>len2 :
-            print(f'Player1 {self.player1.player_name} has won the game')
+            print(f'Player2 {self.player2.player_name} does not have adequate cards to continue..')
+            print()
+            print(f'*** Player1 {self.player1.player_name} has won the game ***')
+            print()
         else:
-            print(f'Player2 {self.player2.player_name} has won the game')
+            print(f'Player1 {self.player1.player_name} does not have adequate cards to continue..')
+            print()
+            print(f'*** Player2 {self.player2.player_name} has won the game ***')
+            print()
     
 
 
-#--------------------------------------------------------Test code------------------------------------------
+#--------------------------------------------------------Building Custom Testcases------------------------------------------
+player1_cards=[]
+player2_cards=[]
 
-player1_name = input('Enter the name of 1st player:  \n')
-player2_name = input('Enter the name of the 2nd player:  \n')
-print()
-#Default for real players
-war=Gameplay(player1_name,player2_name)
+def build_custom_testcase(suits1, ranks1):
+    #suits1 = ['Hearts']
+    #ranks1 = [3, 4, 5, 6, 7, 8,9]
+    cards_of_player = []
+    for suit in suits1:
+        for rank in ranks1:
+            # create card object
+            created_card = Card(suit, rank)
+            cards_of_player.append(created_card)
+
+    return cards_of_player
+
+
+
+##dealing done manually for test code
+
+
+name_of_player1 = "cookie"
+player2_name = "mickey"
+
+war=War(player1_name,player2_name)
+    build_custom_testcase()
+war.deal_test_cards(player1_cards,player2_cards)
 war.start_game()
+
+
+
+
+#--------------------------------------------------------Main method------------------------------------------
+
+if __name__ == "__main__":
+
+
+    #This code is used for running the main game as an end user
+    print()
+    print("************** Starting War Game **************************\n")
+    player1_name = input('Enter the name of the 1st player:   ')
+    player2_name = input('Enter the name of the 2nd player:   ')
+    print()
+    war=Gameplay(player1_name,player2_name)
+    war.start_game()
