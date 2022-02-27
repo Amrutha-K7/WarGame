@@ -104,20 +104,17 @@ class Gameplay:
         # Create deck of 52 cards
         self.current_deck = Deck()
 
-        print("Shuffling the deck of 52 cards...")
-        #call the shuffle method in Deck class to shuffle the cards before distributing
-        self.current_deck.shuffle_cards()
-
         # Create two player objects
         self.player1 = Player(player1_name)
         self.player2 = Player(player2_name)
 
-        #Distribute the cards to both the players
-        self.deal_deck_cards()
 
-
-    #This method is used to distribute the cards to both the players
+    #This method is used to distribute the cards to both the players after shuffling them
     def deal_deck_cards(self):
+
+        print("Shuffling the deck of 52 cards...")
+        #call the shuffle method in Deck class to shuffle the cards before distributing
+        self.current_deck.shuffle_cards()
 
         print("Distributing 26 cards to both the players...")
         #distribute cards one at a time to each player's deck
@@ -140,6 +137,9 @@ class Gameplay:
         if DEBUG_CODE == 1:
             print("Dealing the customized cards")
 
+        self.player1.player_cards=[]
+        self.player2.player_cards=[]
+        print("Distributing Custom deck cards to both the players...")
         self.player1.add_cards(cards1)
         self.player2.add_cards(cards2)
 
@@ -229,39 +229,6 @@ class Gameplay:
             print()
             print(f'*** Player2 {self.player2.player_name} has won the game ***')
             print()
-    
-
-
-#--------------------------------------------------------Building Custom Testcases------------------------------------------
-player1_cards=[]
-player2_cards=[]
-
-def build_custom_testcase(suits1, ranks1):
-    #suits1 = ['Hearts']
-    #ranks1 = [3, 4, 5, 6, 7, 8,9]
-    cards_of_player = []
-    for suit in suits1:
-        for rank in ranks1:
-            # create card object
-            created_card = Card(suit, rank)
-            cards_of_player.append(created_card)
-
-    return cards_of_player
-
-
-
-##dealing done manually for test code
-
-
-name_of_player1 = "cookie"
-player2_name = "mickey"
-
-war=War(player1_name,player2_name)
-    build_custom_testcase()
-war.deal_test_cards(player1_cards,player2_cards)
-war.start_game()
-
-
 
 
 #--------------------------------------------------------Main method------------------------------------------
@@ -276,4 +243,6 @@ if __name__ == "__main__":
     player2_name = input('Enter the name of the 2nd player:   ')
     print()
     war=Gameplay(player1_name,player2_name)
+    #Distribute the cards to both the players
+    war.deal_deck_cards()
     war.start_game()
